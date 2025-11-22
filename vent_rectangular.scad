@@ -13,7 +13,7 @@ wall_thickness =4;
 inner_radius= 1;
 chamfer = 0.6;
 // Lip size around
-lip_size = 10; ///
+lip_size = 12; ///
 
 rib_thickness = 1.6;
 
@@ -153,9 +153,38 @@ module full_duct(){
     }
 }
 
+module screw_hole(dia,head_dia,depth){
+    coords=[
+        [0,0],
+        [0,-depth],
+        [head_dia/2, -depth],
+        [head_dia/2, 0],
+        [dia/2,(head_dia-dia)/2],
+        [dia/2,depth],
+        [0,depth]
+    ];
+    rotate_extrude(angle=360)
+        polygon(coords);
 
-if bore_holes{
-    full_duct();
-}else{
-    full_duct();
 }
+
+module cond_full_duct(){
+    if (bore_holes){
+        difference(){
+            full_duct();
+            union(){
+                screw_offset_radius=(inner_radius+wall_thickness+lip_size)/2;
+                screw_offset = inner_radius + wall_thickness;
+                translate([screw_offset-screw_offset_radius,screw_offset-screw_offset_radius,0]) screw_hole(3,6,20);
+                translate([size_x-screw_offset+screw_offset_radius,screw_offset-screw_offset_radius,0]) screw_hole(3,6,20);
+                translate([size_x-screw_offset+screw_offset_radius,size_y-screw_offset+screw_offset_radius,0]) screw_hole(3,6,20);
+                translate([screw_offset-screw_offset_radius,size_y-screw_offset+screw_offset_radius,0]) screw_hole(3,6,20);
+            }
+        }
+    }
+    else{
+        full_duct();
+    }
+}
+
+cond_full_duct();
